@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Addition DApp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+</head>
+<body>
+
+    <h2>Addition DApp</h2>
+
+    <button onclick="connect()">Connect Wallet</button>
+
+    <br><br>
+
+    <input id="n1" placeholder="First number">
+    <input id="n2" placeholder="Second number">
+
+    <button onclick="add()">ADD</button>
+
+    <h3 id="result">Result: </h3>
+
+    <script>
+
+        let contract;
+
+        const address = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+
+        const abi = [
+            "function add(uint256,uint256)",
+            "function a() view returns(uint256)"
+        ];
+
+        async function connect() {
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+
+            contract = new ethers.Contract(address, abi, signer);
+
+            alert("Wallet Connected");
+        }
+
+        async function add() {
+
+            const x = document.getElementById("n1").value;
+            const y = document.getElementById("n2").value;
+
+            const tx = await contract.add(x, y);
+            await tx.wait();
+
+            const result = await contract.a();
+
+            document.getElementById("result").innerText =
+                "Result: " + result;
+        }
+
+    </script>
+
+</body>
+</html>
