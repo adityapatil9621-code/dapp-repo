@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voting DApp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h2>Voting DApp</h2>
+    <button onclick="connect()">Connect Wallet</button>
+
+    <br><br>
+    <h3>Add Candidate</h3>
+    <input id="candidateName" placeholder="Candidate name">
+    <button onclick="addCandidate()">Add Candidate</button>
+
+    <br><br>
+    <h3>Vote</h3>
+    <input id="voteName" placeholder="Enter candidate name">
+    <button onclick="vote()">Vote</button>
+
+    <br><br>
+    <h3>Check Votes</h3>
+    <input id="checkName" placeholder="Enter candidate name">
+    <button onclick="getVotes()">Get Votes</button>
+
+    <h3 id="result">Result:</h3>
+    <button onclick="getWinner()">Get Winner</button>
+
+    <script>
+        let contract;
+
+        // Replace with the address printed after deploying Voting.
+        const address = "PASTE_DEPLOYED_VOTING_CONTRACT_ADDRESS";
+
+        const abi = [
+            "function addCandidate(string)",
+            "function vote(string)",
+            "function getVotes(string) view returns(uint256)",
+            "function getWinner() view returns(string)"
+        ];
+
+        async function connect() {
+            if (!window.ethereum) {
+                alert("Please install MetaMask");
+                return;
+            }
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            contract = new ethers.Contract(address, abi, signer);
+            alert("Wallet Connected");
+        }
+
+        async function addCandidate() {
+            if (!contract) {
+                alert("Connect Wallet first");
+                return;
+            }
+
+            const name = document.getElementById("candidateName").value.trim();
+            if (name === "") {
+                alert("Enter candidate name");
+                return;
+            }
+
+            const tx = await contract.addCandidate(name);
+            await tx.wait();
+            document.getElementById("result").innerText = "Candidate added: " + name;
+        }
+
+        async function vote() {
+            if (!contract) {
+                alert("Connect Wallet first");
+                return;
+            }
+
+            const name = document.getElementById("voteName").value.trim();
+            if (name === "") {
+                alert("Enter candidate name");
+                return;
+            }
+
+            const tx = await contract.vote(name);
+            await tx.wait();
+            document.getElementById("result").innerText = "Vote submitted for: " + name;
+        }
+
+        async function getVotes() {
+            if (!contract) {
+                alert("Connect Wallet first");
+                return;
+            }
+
+            const name = document.getElementById("checkName").value.trim();
+            if (name === "") {
+                alert("Enter candidate name");
+                return;
+            }
+
+            const count = await contract.getVotes(name);
+            document.getElementById("result").innerText =
+                name + " has " + count.toString() + " vote(s)";
+        }
+
+        async function getWinner() {
+            if (!contract) {
+                alert("Connect Wallet first");
+                return;
+            }
+
+            const winner = await contract.getWinner();
+            document.getElementById("result").innerText = "Winner: " + winner;
+        }
+    </script>
+</body>
+</html>
